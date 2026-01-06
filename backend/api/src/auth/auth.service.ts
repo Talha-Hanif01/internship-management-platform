@@ -23,19 +23,19 @@ export class AuthService {
   async login(dto: LoginDto) {
     const { email, password } = dto;
 
-    // 1️⃣ Find user
+    // 1️ Find user
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 2️⃣ Check password
+    // 2️ Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 3️⃣ FIRST LOGIN → issue TEMP TOKEN ONLY
+    // 3️ FIRST LOGIN → issue TEMP TOKEN ONLY
     if (user.mustChangePassword) {
       const tempPayload = {
         sub: user.id,
@@ -44,7 +44,7 @@ export class AuthService {
       };
 
       const tempToken = this.jwtService.sign(tempPayload, {
-        secret: this.configService.get<string>('JWT_TEMP_SECRET'), // ✅ IMPORTANT
+        secret: this.configService.get<string>('JWT_TEMP_SECRET'),
         expiresIn: '10m',
       });
 
@@ -54,7 +54,7 @@ export class AuthService {
       };
     }
 
-    // 4️⃣ NORMAL LOGIN → access + refresh tokens
+    // 4️ NORMAL LOGIN → access + refresh tokens
     const payload = {
       sub: user.id,
       email: user.email,
@@ -149,7 +149,7 @@ export class AuthService {
 
     // 4️ New ACCESS TOKEN
     const newAccessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'), // ✅ SAME AS LOGIN
+      secret: this.configService.get<string>('JWT_SECRET'), //SAME AS LOGIN
       expiresIn: '30m',
     });
 
